@@ -4,7 +4,8 @@ import { fauna } from "../../../services/fauna";
 
 export async function saveSubscription(
   subscriptionId: string,
-  customerId: string
+  customerId: string,
+  createdAction = false
 ) {
   const userRef = await fauna.query(
     q.Select(
@@ -17,9 +18,21 @@ export async function saveSubscription(
     id: subscription.id,
     userId: userRef,
     status: subscription.status,
-    prive_id: subscription.items.data[0].price.id,
+    price_id: subscription.items.data[0].price.id,
   };
-  await fauna.query(
-    q.Create(q.Collection("subscriptions"), { data: subscriptionData })
-  );
+  if (createdAction) {
+    await fauna.query(
+      q.Create(q.Collection("subscriptions"), { data: subscriptionData })
+    );
+  } else {
+    await fauna.query(
+      q.Replace(
+        q.Select(
+          "ref",
+          q.Get(q.Match(q.Index("subscription_by_id"), subscriptionId))
+        ),
+        {data: subscriptionData}
+      )
+    );
+  }
 }
