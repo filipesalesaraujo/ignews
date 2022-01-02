@@ -18,7 +18,6 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       q.Get(q.Match(q.Index("user_by_email"), q.Casefold(session.user.email)))
     );
     let customerId = user.data.stripe_customer_id;
-
     if (!customerId) {
       const stripeCustomer = await stripe.customers.create({
         email: session.user.email,
@@ -36,7 +35,7 @@ export default async (req: NextApiRequest, res: NextApiResponse) => {
       customer: customerId,
       payment_method_types: ["card"],
       billing_address_collection: "required",
-      line_items: [{ price: "price_1KDDHWJF7tRLMTcn4JCwOipI", quantity: 1 }],
+      line_items: [{ price: "price_1KDZhZJF7tRLMTcnv9jP2xeB", quantity: 1 }],
       mode: "subscription",
       allow_promotion_codes: true,
       success_url: process.env.STRIPE_SUCCESS_URL,
