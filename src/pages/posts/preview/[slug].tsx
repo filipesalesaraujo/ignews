@@ -1,4 +1,4 @@
-import { GetStaticProps } from "next";
+import { GetStaticPaths, GetStaticProps } from "next";
 import { useSession } from "next-auth/react";
 import Head from "next/head";
 import Link from "next/link";
@@ -19,7 +19,7 @@ export default function PostPreview({ post }: PostPreviewProps) {
   const { data: session } = useSession();
   const router = useRouter();
   useEffect(() => {
-    if(session?.activeSubscription) {
+    if (session?.activeSubscription) {
       router.push(`/posts/${post.slug}`);
     }
   }, [session]);
@@ -47,16 +47,16 @@ export default function PostPreview({ post }: PostPreviewProps) {
     </>
   );
 }
-export const getStaticPaths = () => {
+export const getStaticPaths: GetStaticPaths = async () => {
   return {
     paths: [],
-    fallback: true,
+    fallback: "blocking",
   };
 };
 export const getStaticProps: GetStaticProps = async ({ params }) => {
   const { slug } = params;
   const prismic = getPrismicClient();
-  const response = await prismic.getByUID("posts", String(slug), {});
+  const response = await prismic.getByUID<any>("posts", String(slug), {});
   const post = {
     slug,
     title: RichText.asText(response.data.title),
@@ -74,5 +74,6 @@ export const getStaticProps: GetStaticProps = async ({ params }) => {
     props: {
       post,
     },
+    redirect: 60 * 30,
   };
 };

@@ -6,8 +6,8 @@ import { getPrismicClient } from "../../services/prismic";
 import styles from "./post.module.scss";
 interface PostProps {
   post: {
-    slug: string;
     title: string;
+    slug: string;
     content: string;
     updatedAt: string;
   };
@@ -31,13 +31,25 @@ export default function Post({ post }: PostProps) {
     </>
   );
 }
+
 export const getServerSideProps: GetServerSideProps = async ({
   req,
   params,
 }) => {
+
   const session = await getSession({ req });
+
   const { slug } = params;
-  console.log(session);
+
+  if (slug === "favicon.png") {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
+
   if (!session?.activeSubscription) {
     return {
       redirect: {
@@ -45,18 +57,13 @@ export const getServerSideProps: GetServerSideProps = async ({
         permanent: false,
       },
     };
+  
   }
+
   const prismic = getPrismicClient(req);
-  const response = await prismic.getByUID("posts", String(slug), {});
-  //Post não encontrado
-  if (!response) {
-    return {
-      redirect: {
-        destination: "/",
-        permanent: false,
-      },
-    };
-  }
+
+  const response = await prismic.getByUID<any>("posts", String(slug), {});
+
   const post = {
     slug,
     title: RichText.asText(response.data.title),

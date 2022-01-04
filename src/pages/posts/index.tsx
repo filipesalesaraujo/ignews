@@ -23,7 +23,7 @@ export default function Posts({ posts }: PostsProps) {
       <main className={styles.container}>
         <div className={styles.posts}>
           {posts.map((post) => (
-            <Link href={`/posts/${post.slug}`}>
+            <Link key={post.slug} href={`/posts/${post.slug}`}>
               <a key={post.slug}>
                 <time>{post.updatedAt}</time>
                 <strong>{post.title}</strong>
@@ -38,7 +38,7 @@ export default function Posts({ posts }: PostsProps) {
 }
 export const getStaticProps: GetStaticProps = async () => {
   const prismic = getPrismicClient();
-  const response = await prismic.query(
+  const response = await prismic.query<any>(
     [Prismic.predicates.at("document.type", "posts")],
     {
       fetch: ["posts.title", "posts.content"],
@@ -52,11 +52,14 @@ export const getStaticProps: GetStaticProps = async () => {
       excerpt:
         post.data.content.find((content) => content.type === "paragraph")
           ?.text ?? "",
-      updatedAt: new Date(post.last_publication_date).toLocaleDateString("pt-BR", {
-        day: "2-digit",
-        month: "long",
-        year: "numeric",
-      }),
+      updatedAt: new Date(post.last_publication_date).toLocaleDateString(
+        "pt-BR",
+        {
+          day: "2-digit",
+          month: "long",
+          year: "numeric",
+        }
+      ),
     };
   });
   return {
