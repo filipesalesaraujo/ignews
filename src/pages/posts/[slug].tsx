@@ -4,7 +4,6 @@ import Head from "next/head";
 import { RichText } from "prismic-dom";
 import { getPrismicClient } from "../../services/prismic";
 import styles from "./post.module.scss";
-
 interface PostProps {
   post: {
     slug: string;
@@ -13,7 +12,6 @@ interface PostProps {
     updatedAt: string;
   };
 }
-
 export default function Post({ post }: PostProps) {
   return (
     <>
@@ -33,16 +31,32 @@ export default function Post({ post }: PostProps) {
     </>
   );
 }
-
 export const getServerSideProps: GetServerSideProps = async ({
   req,
   params,
 }) => {
   const session = await getSession({ req });
   const { slug } = params;
-  // if(!session){}
+  console.log(session);
+  if (!session.activeSubscription) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
   const prismic = getPrismicClient(req);
   const response = await prismic.getByUID("posts", String(slug), {});
+  //Post não encontrado
+  if (!response) {
+    return {
+      redirect: {
+        destination: "/",
+        permanent: false,
+      },
+    };
+  }
   const post = {
     slug,
     title: RichText.asText(response.data.title),
